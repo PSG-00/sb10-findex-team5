@@ -140,25 +140,4 @@ public class IndexData extends BaseUpdatableEntity {
         this.tradingPrice = requireValue(tradingPrice);
         this.marketTotalAmount = requireValue(marketTotalAmount);
     }
-  public void update(
-      BigDecimal marketPrice,
-      BigDecimal closingPrice,
-      BigDecimal highPrice,
-      BigDecimal lowPrice,
-      BigDecimal versus,
-      BigDecimal fluctuationRate,
-      Long tradingQuantity,
-      Long tradingPrice,
-      Long marketTotalAmount
-  ) {
-    this.marketPrice = normalize(marketPrice);
-    this.closingPrice = normalize(closingPrice);
-    this.highPrice = normalize(highPrice);
-    this.lowPrice = normalize(lowPrice);
-    this.versus = normalize(versus);
-    this.fluctuationRate = normalize(fluctuationRate);
-    this.tradingQuantity = requireValue(tradingQuantity);
-    this.tradingPrice = requireValue(tradingPrice);
-    this.marketTotalAmount = requireValue(marketTotalAmount);
-  }
 }
