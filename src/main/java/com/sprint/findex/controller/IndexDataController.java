@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -35,8 +34,8 @@ public class IndexDataController {
     private final IndexDataService indexDataService;
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<IndexDataDto> create(@RequestBody @Valid IndexDataCreateRequest request) {
+    public ResponseEntity<IndexDataDto> createIndexData(
+            @RequestBody @Valid IndexDataCreateRequest request) {
         IndexDataDto response = indexDataService.save(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -44,8 +43,7 @@ public class IndexDataController {
     }
 
     @PatchMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<IndexDataDto> update(
+    public ResponseEntity<IndexDataDto> updateIndexData(
             @PathVariable UUID id,
             @RequestBody @Valid IndexDataUpdateRequest request) {
         IndexDataDto response = indexDataService.update(id, request);
@@ -56,8 +54,7 @@ public class IndexDataController {
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteIndexData(@PathVariable UUID id) {
         indexDataService.delete(id);
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
@@ -65,8 +62,7 @@ public class IndexDataController {
     }
 
     @GetMapping("/export/csv")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Resource> exportCsv(
+    public ResponseEntity<Resource> exportIndexData(
             @RequestParam(required = false) UUID indexInfoId,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate,
