@@ -25,13 +25,13 @@ import org.hibernate.annotations.Check;
 @Getter
 @Entity
 @Table(
-    name = "index_data",
-    uniqueConstraints = {
-        @UniqueConstraint(
-            name = "uq_index_data_index_info_id_base_date",
-            columnNames = {"index_info_id", "base_date"}
-        )
-    }
+        name = "index_data",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_index_data_index_info_base_date",
+                        columnNames = {"index_info_id", "base_date"}
+                )
+        }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
