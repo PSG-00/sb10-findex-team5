@@ -2,12 +2,14 @@ package com.sprint.findex.controller;
 
 import com.sprint.findex.dto.indexdata.IndexDataCreateRequest;
 import com.sprint.findex.dto.indexdata.IndexDataDto;
+import com.sprint.findex.dto.indexdata.IndexDataExportRequest;
 import com.sprint.findex.dto.indexdata.IndexDataQueryCondition;
 import com.sprint.findex.dto.indexdata.IndexDataUpdateRequest;
 import com.sprint.findex.dto.response.PageResponse;
 import com.sprint.findex.exception.ErrorResponse;
 import com.sprint.findex.service.IndexDataService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -33,7 +35,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -44,10 +45,10 @@ public class IndexDataController {
 
     private final IndexDataService indexDataService;
 
-    @Operation(summary = "지수 데이터 생성", description = "새로운 지수 데이터를 생성합니다.", operationId = "createIndexData")
+    @Operation(summary = "지수 데이터 등록", description = "새로운 지수 데이터를 등록합니다.", operationId = "createIndexData")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "지수 데이터 생성 성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 (필수 필드 누락 등)",
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 (유효하지 않은 데이터 값 등)",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "참조하는 지수 정보를 찾을 수 없음",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
@@ -66,13 +67,14 @@ public class IndexDataController {
     @Operation(summary = "지수 데이터 수정", description = "기존 지수 데이터를 수정합니다.", operationId = "updateIndexData")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "지수 데이터 수정 성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 (필수 필드 누락 등)",
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 (유효하지 않은 데이터 값 등)",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "수정할 지수 데이터를 찾을 수 없음",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 오류",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
+    @Parameter(name = "id", description = "지수 데이터 ID")
     @PatchMapping("/{id}")
     public ResponseEntity<IndexDataDto> updateIndexData(
             @PathVariable UUID id,
@@ -84,16 +86,15 @@ public class IndexDataController {
 
     }
 
-    @Operation(summary = "지수 데이터 삭제", description = "기존 지수 데이터를 삭제합니다.", operationId = "updateIndexData")
+    @Operation(summary = "지수 데이터 삭제", description = "지수 데이터를 삭제합니다.", operationId = "updateIndexData")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "지수 데이터 삭제 성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 (필수 필드 누락 등)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "삭제할 지수 데이터를 찾을 수 없음",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 오류",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
+    @Parameter(name = "id", description = "지수 정보 ID")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteIndexData(@PathVariable UUID id) {
         indexDataService.delete(id);
@@ -109,17 +110,12 @@ public class IndexDataController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 오류",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    })햣
+    })
     @GetMapping("/export/csv")
     public ResponseEntity<Resource> exportIndexData(
-            @RequestParam(required = false) UUID indexInfoId,
-            @RequestParam(required = false) LocalDate startDate,
-            @RequestParam(required = false) LocalDate endDate,
-            @RequestParam(defaultValue = "baseDate") String sortField,
-            @RequestParam(defaultValue = "desc") String sortDirection) {
+            @ParameterObject @Valid IndexDataExportRequest request) {
 
-        Resource response = indexDataService.export(indexInfoId, startDate, endDate, sortField,
-                sortDirection);
+        Resource response = indexDataService.export(request);
 
         LocalDate now = LocalDate.now();
 

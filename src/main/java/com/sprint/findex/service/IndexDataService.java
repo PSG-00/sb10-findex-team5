@@ -2,6 +2,7 @@ package com.sprint.findex.service;
 
 import com.sprint.findex.dto.indexdata.IndexDataCreateRequest;
 import com.sprint.findex.dto.indexdata.IndexDataDto;
+import com.sprint.findex.dto.indexdata.IndexDataExportRequest;
 import com.sprint.findex.dto.indexdata.IndexDataQueryCondition;
 import com.sprint.findex.dto.indexdata.IndexDataUpdateRequest;
 import com.sprint.findex.dto.response.PageResponse;
@@ -87,25 +88,22 @@ public class IndexDataService {
         indexDataRepository.delete(indexData);
     }
 
-    public Resource export(UUID indexInfoId, LocalDate startDate, LocalDate endDate,
-            String sortField,
-            String sortDirection) {
-        validateDateRange(startDate, endDate);
+    public Resource export(IndexDataExportRequest request) {
+        validateDateRange(request.startDate(), request.endDate());
         StringBuilder builder = new StringBuilder();
 
-        builder.append("기준일자,시가,종가,고가,저가,전일 대비 등락,전일 대비 등락률,거래량,거래대금,시가총액\n");
+        builder.append("기준일자,시가,종가,고가,저가,전일대비등락,등락률,거래량,거래대금,시가총액\n");
 
-        Sort sort = Sort.by(SortUtils.directionOf(sortDirection), sortField);
+        Sort sort = Sort.by(SortUtils.directionOf(request.sortDirection()), request.sortField());
         List<IndexData> rows = indexDataRepository.findAllForExport(
-                indexInfoId,
-                startDate,
-                endDate,
+                request.indexInfoId(),
+                request.startDate(),
+                request.endDate(),
                 sort
         );
 
         for (IndexData row : rows) {
             builder.append(row.getBaseDate()).append(',')
-                    .append(row.getSourceType()).append(',')
                     .append(row.getMarketPrice()).append(',')
                     .append(row.getClosingPrice()).append(',')
                     .append(row.getHighPrice()).append(',')
