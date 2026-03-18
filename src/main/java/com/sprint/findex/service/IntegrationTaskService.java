@@ -1,6 +1,7 @@
 package com.sprint.findex.service;
 
 import com.sprint.findex.dto.response.PageResponse;
+import com.sprint.findex.dto.sync.CursorPageResponseSyncJobDto;
 import com.sprint.findex.dto.sync.IndexDataSyncRequest;
 import com.sprint.findex.dto.sync.SyncJobDto;
 import com.sprint.findex.dto.sync.SyncJobQueryCondition;
@@ -22,22 +23,24 @@ public class IntegrationTaskService {
     private final IntegrationTaskRepository integrationTaskRepository;
     private final SyncJobMapper syncJobMapper;
 
-    public List<IndexDataSyncRequest> buildAutoSyncTargets(List<UUID> indexInfoIds,
-            LocalDate baseDateTo) {
+    public List<IndexDataSyncRequest> buildAutoSyncTargets(List<UUID> indexInfoIds, LocalDate baseDateTo) {
         return indexInfoIds.stream()
-                .map(id -> {
-                    LocalDate baseDateFrom = integrationTaskRepository.findLastIndexDataSyncDate(id)
-                            .map(lastDate -> lastDate.plusDays(1))
-                            .orElse(baseDateTo);
-
-                    return new IndexDataSyncRequest(List.of(id), baseDateFrom, baseDateTo);
-                })
-                .filter(request -> request.baseDateFrom() == null || !request.baseDateFrom()
-                        .isAfter(baseDateTo))
+                .map(id -> buildAutoSyncTarget(id, baseDateTo))
                 .toList();
     }
 
-    public PageResponse<SyncJobDto> getSyncJobList(SyncJobQueryCondition condition) {
+    private IndexDataSyncRequest buildAutoSyncTarget(UUID id, LocalDate baseDateTo) {
+        LocalDate baseDateFrom = integrationTaskRepository.findLastIndexDataSyncDate(id)
+                .map(lastDate -> {
+                    LocalDate nextUnsyncedDate = lastDate.plusDays(1);
+                    return nextUnsyncedDate.isAfter(baseDateTo) ? baseDateTo : nextUnsyncedDate;
+                })
+                .orElse(baseDateTo);
+
+        return new IndexDataSyncRequest(List.of(id), baseDateFrom, baseDateTo);
+    }
+
+    public CursorPageResponseSyncJobDto getSyncJobList(SyncJobQueryCondition condition) {
         PageResponse<IntegrationTask> page = integrationTaskRepository.findAllWithSyncJobQueryCondition(
                 condition);
 
@@ -57,7 +60,7 @@ public class IntegrationTaskService {
             ));
         }
 
-        return new PageResponse<SyncJobDto>(
+        return new CursorPageResponseSyncJobDto(
                 content,
                 page.nextCursor(),
                 page.nextIdAfter(),
